@@ -5,6 +5,7 @@ import {
   renderRegisterView,
 } from './views/auth.js';
 import { renderShowcaseView } from './views/showcase.js';
+import { renderMyTicketsView } from './views/my-tickets.js';
 import { renderOrganizerListView } from './views/organizer-list.js';
 import { renderOrganizerEventView } from './views/organizer-event.js';
 
@@ -92,37 +93,6 @@ function renderHeader() {
   });
 }
 
-function renderMyTicketsPlaceholder(container) {
-  if (!state.user) {
-    container.innerHTML = `
-      <div class="card" data-view="my-tickets-guest">
-        <h1>Meus ingressos</h1>
-        <div class="alert info">Entre como participante para visualizar seus ingressos.</div>
-        <a href="/login" class="btn" data-link>Entrar</a>
-      </div>
-    `;
-    return;
-  }
-
-  if (state.user.role !== 'participant') {
-    container.innerHTML = `
-      <div class="card" data-view="access-denied">
-        <h1>Acesso restrito</h1>
-        <div class="alert error">A página "Meus ingressos" é exclusiva para contas de participante.</div>
-        <a href="/organizer" class="btn secondary" data-link>Ir para Meus eventos</a>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = `
-    <div class="card" data-view="my-tickets">
-      <h1>Meus ingressos</h1>
-      <p style="color: var(--muted);">Seus ingressos adquiridos aparecerão aqui.</p>
-    </div>
-  `;
-}
-
 function renderNotFound(container) {
   container.innerHTML = `
     <div class="card" data-view="not-found">
@@ -169,7 +139,7 @@ function renderRoute() {
   }
 
   if (path === '/') {
-    void renderShowcaseView(root);
+    void renderShowcaseView(root, { user: state.user });
     return;
   }
 
@@ -194,7 +164,7 @@ function renderRoute() {
   }
 
   if (path === '/my-tickets') {
-    renderMyTicketsPlaceholder(root);
+    void renderMyTicketsView(root, { user: state.user });
     return;
   }
 

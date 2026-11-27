@@ -97,7 +97,71 @@ export function describeValidationHint({ name, location, startsAtIso, capacity, 
   return 'Dados inválidos. Verifique os campos preenchidos (data futura, lotação >= 1 e preço > 0).';
 }
 
-export async function renderShowcaseView(container) {
+export function isValidShowcaseCardNumber(value) {
+  return typeof value === 'string' && /^\d{16}$/.test(value);
+}
+
+function renderPurchaseSlotContent(ev, user) {
+  const soldOut = Number(ev.availableSeats) <= 0;
+  if (soldOut) {
+    return `<div class="alert error" data-sold-out-notice style="margin: 0;">Ingressos esgotados</div>`;
+  }
+
+  if (!user) {
+    return `<a href="/login" class="btn secondary" data-link>Entrar para comprar ingresso</a>`;
+  }
+
+  if (user.role !== 'participant') {
+    return `<p style="margin: 0; font-size: 0.88rem; color: var(--muted);">Entre com uma conta de participante para comprar ingressos.</p>`;
+  }
+
+  return `
+    <div data-purchase-feedback hidden></div>
+    <form class="showcase-purchase-form" data-event-id="${escapeHtml(ev.id)}">
+      <label for="card-number-${escapeHtml(ev.id)}">Cartão de crédito (16 dígitos)</label>
+      <input
+        id="card-number-${escapeHtml(ev.id)}"
+        name="cardNumber"
+        type="text"
+        inputmode="numeric"
+        maxlength="16"
+        placeholder="4000000000000001"
+        autocomplete="off"
+        required
+      />
+      <button type="submit" data-purchase-submit="${escapeHtml(ev.id)}">Comprar ingresso</button>
+    </form>
+  `;
+}
+
+function markEventCardSoldOut(cardEl, slotEl, { preserveFeedback = false } = {}) {
+  const badgeEl = cardEl?.querySelector('[data-availability]');
+  if (badgeEl) {
+    badgeEl.setAttribute('data-availability', 'sold-out');
+    badgeEl.setAttribute('style', 'background: #fee2e2; color: #991b1b;');
+    badgeEl.textContent = 'Ingressos esgotados';
+  }
+  if (!slotEl) return;
+  slotEl.setAttribute('data-available-seats', '0');
+
+  const formEl = slotEl.querySelector('form.showcase-purchase-form');
+  if (formEl) {
+    formEl.remove();
+  }
+
+  if (!preserveFeedback) {
+    slotEl.innerHTML = `<div class="alert error" data-sold-out-notice style="margin: 0;">Ingressos esgotados</div>`;
+  } else if (!slotEl.querySelector('[data-sold-out-notice]')) {
+    const notice = document.createElement('div');
+    notice.className = 'alert error';
+    notice.setAttribute('data-sold-out-notice', '');
+    notice.style.margin = '0.5rem 0 0';
+    notice.textContent = 'Ingressos esgotados';
+    slotEl.appendChild(notice);
+  }
+}
+
+export async function renderShowcaseView(container, { user = null } = {}) {
   container.innerHTML = `
     <div class="card" data-view="showcase">
       <h1 style="margin-top: 0;">Eventos disponíveis</h1>
@@ -161,13 +225,114 @@ export async function renderShowcaseView(container) {
                   data-event-id="${escapeHtml(ev.id)}"
                   data-available-seats="${escapeHtml(ev.availableSeats)}"
                   style="margin-top: 0.85rem;"
-                ></div>
+                >${renderPurchaseSlotContent(ev, user)}</div>
               </article>
             `;
           })
           .join('')}
       </div>
     `;
+
+    const forms = listEl.querySelectorAll('form.showcase-purchase-form');
+    forms.forEach((form) => {
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const eventId = form.getAttribute('data-event-id') || '';
+        const slotEl = form.closest('.event-purchase-slot');
+        const cardEl = form.closest('[data-event-card]');
+        const feedbackEl = slotEl?.querySelector('[data-purchase-feedback]');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const cardInput = form.querySelector('input[name="cardNumber"]');
+
+        if (feedbackEl) {
+          feedbackEl.hidden = true;
+          feedbackEl.innerHTML = '';
+        }
+
+        const cardNumber = String(cardInput?.value || '').trim();
+        if (!isValidShowcaseCardNumber(cardNumber)) {
+          if (feedbackEl) {
+            feedbackEl.innerHTML =
+              '<div class="alert error">Informe um número de cartão válido com exatamente 16 dígitos numéricos.</div>';
+            feedbackEl.hidden = false;
+          }
+          return;
+        }
+
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+          const purchaseRes = await fetch(`/api/events/${encodeURIComponent(eventId)}/purchases`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ cardNumber }),
+          });
+
+          const body = await purchaseRes.json().catch(() => ({}));
+
+          if (purchaseRes.status === 202) {
+            if (cardInput) cardInput.value = '';
+            if (feedbackEl) {
+              feedbackEl.innerHTML = `
+                <div class="alert success" data-purchase-success>
+                  Ingresso reservado! Status: <strong>pendente</strong> — Código: <strong>${escapeHtml(body.code)}</strong>.
+                  <a href="/my-tickets" data-link style="margin-left: 0.35rem; font-weight: 700;">Ver em Meus ingressos</a>
+                </div>
+              `;
+              feedbackEl.hidden = false;
+            }
+
+            const prevSeats = Number(slotEl?.getAttribute('data-available-seats') || '1');
+            const nextSeats = Math.max(0, prevSeats - 1);
+            if (nextSeats <= 0) {
+              markEventCardSoldOut(cardEl, slotEl, { preserveFeedback: true });
+            } else {
+              slotEl?.setAttribute('data-available-seats', String(nextSeats));
+              const badgeEl = cardEl?.querySelector('[data-availability]');
+              if (badgeEl) {
+                badgeEl.textContent = `Vagas disponíveis: ${nextSeats}`;
+              }
+            }
+            return;
+          }
+
+          if (purchaseRes.status === 409 && body.error === 'sold_out') {
+            markEventCardSoldOut(cardEl, slotEl, { preserveFeedback: false });
+            return;
+          }
+
+          if (purchaseRes.status === 404 && body.error === 'event_not_available') {
+            form.remove();
+            if (feedbackEl) {
+              feedbackEl.innerHTML =
+                '<div class="alert error">Este evento não está mais disponível para compra.</div>';
+              feedbackEl.hidden = false;
+            }
+            return;
+          }
+
+          if (feedbackEl) {
+            const msg =
+              purchaseRes.status === 422
+                ? 'Informe um número de cartão válido com exatamente 16 dígitos numéricos.'
+                : 'Não foi possível concluir a compra. Tente novamente.';
+            feedbackEl.innerHTML = `<div class="alert error">${escapeHtml(msg)}</div>`;
+            feedbackEl.hidden = false;
+          }
+        } catch {
+          if (feedbackEl) {
+            feedbackEl.innerHTML =
+              '<div class="alert error">Erro de conexão ao realizar a compra.</div>';
+            feedbackEl.hidden = false;
+          }
+        } finally {
+          if (submitBtn && submitBtn.isConnected) {
+            submitBtn.disabled = false;
+          }
+        }
+      });
+    });
   } catch {
     if (listEl && container.isConnected) {
       listEl.innerHTML =
