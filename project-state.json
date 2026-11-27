@@ -1,12 +1,23 @@
 {
   "project": "Catraca",
-  "updatedAt": "2026-11-27T17:35:00-03:00",
+  "updatedAt": "2026-11-27T21:28:01.347Z",
   "waves": {
-    "wave1": ["F01"],
-    "wave2": ["F02"],
-    "wave3": ["F03"],
-    "wave4_parallel": ["F04", "F05"],
-    "wave5": ["F06"]
+    "wave1": [
+      "F01"
+    ],
+    "wave2": [
+      "F02"
+    ],
+    "wave3": [
+      "F03"
+    ],
+    "wave4_parallel": [
+      "F04",
+      "F05"
+    ],
+    "wave5": [
+      "F06"
+    ]
   },
   "features": {
     "F01": {
@@ -14,8 +25,8 @@
       "slug": "F01-auth-access",
       "name": "Autenticação, Contas e Controle de Acesso",
       "wave": 1,
-      "status": "planned",
-      "latestEvaluationReport": null
+      "status": "completed",
+      "latestEvaluationReport": "docs/features/F01-auth-access/reports/eval-01.md"
     },
     "F02": {
       "id": "F02",
