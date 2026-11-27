@@ -9,6 +9,11 @@ import {
   requirePartnerApiKey,
 } from './modules/auth/middleware.js';
 import { authRouter } from './modules/auth/routes.js';
+import {
+  organizerEventsRouter,
+  partnerEventsRouter,
+  publicEventsRouter,
+} from './modules/events/routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -32,15 +37,9 @@ export function createApp() {
   app.use(express.json());
 
   app.use('/api/auth', authRouter);
-
-  // Rotas base mínimas protegidas pelos guardas (serão expandidas em F02)
-  app.get('/api/organizer/events', (_req: Request, res: Response) => {
-    res.status(200).json([]);
-  });
-
-  app.get('/api/partner/events', (_req: Request, res: Response) => {
-    res.status(200).json([]);
-  });
+  app.use('/api/events', publicEventsRouter);
+  app.use('/api/organizer/events', organizerEventsRouter);
+  app.use('/api/partner/events', partnerEventsRouter);
 
   app.all('/api/*', (_req: Request, res: Response) => {
     res.status(404).json({ error: 'not_found' });
