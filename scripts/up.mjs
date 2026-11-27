@@ -1,5 +1,7 @@
 import { execSync } from 'node:child_process';
+import fs from 'node:fs';
 import http from 'node:http';
+import path from 'node:path';
 
 const port = process.env.PORT || '3000';
 const url = `http://localhost:${port}/api/health`;
@@ -17,6 +19,14 @@ function checkHealth() {
     });
   });
 }
+
+if (!fs.existsSync(path.resolve(process.cwd(), 'node_modules/express'))) {
+  console.log('[catraca:up] Instalando dependências Node.js...');
+  execSync('npm install --no-audit --no-fund', { stdio: 'inherit' });
+}
+
+console.log('[catraca:up] Compilando aplicação TypeScript...');
+execSync('npm run build', { stdio: 'inherit' });
 
 console.log('[catraca:up] Subindo containers (PostgreSQL + App + Migrations + Seed)...');
 execSync('docker compose up -d --build --wait', { stdio: 'inherit' });

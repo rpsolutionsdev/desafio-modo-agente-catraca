@@ -1,0 +1,13 @@
+.git
+.worktrees
+docs
+tests
+scripts
+*.md
+*.log
+cookies*.txt
+node_modules/typescript
+node_modules/tsx
+node_modules/esbuild
+node_modules/@esbuild
+node_modules/@types

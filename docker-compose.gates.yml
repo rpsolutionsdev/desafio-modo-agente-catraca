@@ -1,6 +1,8 @@
 services:
   db:
     image: postgres:16-alpine
+    ports:
+      - "127.0.0.1::5432"
     environment:
       POSTGRES_USER: catraca_test
       POSTGRES_PASSWORD: catraca_test
@@ -10,17 +12,3 @@ services:
       interval: 1s
       timeout: 3s
       retries: 25
-
-  gates:
-    build:
-      context: .
-      target: gates
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      NODE_ENV: test
-      DATABASE_URL: postgres://catraca_test:catraca_test@db:5432/catraca_test
-      AUTH_SECRET: catraca-test-secret
-      PARTNER_API_KEY: catraca-partner-secret-key
-      GATEWAY_DELAY_MULTIPLIER: ${GATEWAY_DELAY_MULTIPLIER:-0.05}
