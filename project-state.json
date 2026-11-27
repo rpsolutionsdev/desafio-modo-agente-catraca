@@ -1,0 +1,61 @@
+{
+  "project": "Catraca",
+  "updatedAt": "2026-11-27T17:35:00-03:00",
+  "waves": {
+    "wave1": ["F01"],
+    "wave2": ["F02"],
+    "wave3": ["F03"],
+    "wave4_parallel": ["F04", "F05"],
+    "wave5": ["F06"]
+  },
+  "features": {
+    "F01": {
+      "id": "F01",
+      "slug": "F01-auth-access",
+      "name": "Autenticação, Contas e Controle de Acesso",
+      "wave": 1,
+      "status": "planned",
+      "latestEvaluationReport": null
+    },
+    "F02": {
+      "id": "F02",
+      "slug": "F02-events-showcase",
+      "name": "Ciclo de Vida de Eventos e Vitrine Pública",
+      "wave": 2,
+      "status": "planned",
+      "latestEvaluationReport": null
+    },
+    "F03": {
+      "id": "F03",
+      "slug": "F03-purchases-gateway",
+      "name": "Compra de Ingressos, Lotação Concorrente, Gateway Simulado e API de Parceiros",
+      "wave": 3,
+      "status": "planned",
+      "latestEvaluationReport": null
+    },
+    "F04": {
+      "id": "F04",
+      "slug": "F04-checkin",
+      "name": "Operação de Check-in do Evento",
+      "wave": 4,
+      "status": "planned",
+      "latestEvaluationReport": null
+    },
+    "F05": {
+      "id": "F05",
+      "slug": "F05-cancellation-refunds",
+      "name": "Cancelamento Irreversível e Estorno Assíncrono",
+      "wave": 4,
+      "status": "planned",
+      "latestEvaluationReport": null
+    },
+    "F06": {
+      "id": "F06",
+      "slug": "F06-event-dashboard",
+      "name": "Painel Operacional e Financeiro do Evento",
+      "wave": 5,
+      "status": "planned",
+      "latestEvaluationReport": null
+    }
+  }
+}

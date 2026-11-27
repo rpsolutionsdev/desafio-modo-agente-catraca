@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.worktrees/
+*.log
+cookies*.txt
+tmp/
+.DS_Store
