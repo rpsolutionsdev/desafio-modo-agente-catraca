@@ -1,6 +1,6 @@
 {
   "project": "Catraca",
-  "updatedAt": "2026-11-27T21:28:01.347Z",
+  "updatedAt": "2026-11-27T22:00:56.879Z",
   "waves": {
     "wave1": [
       "F01"
@@ -33,8 +33,8 @@
       "slug": "F02-events-showcase",
       "name": "Ciclo de Vida de Eventos e Vitrine Pública",
       "wave": 2,
-      "status": "planned",
-      "latestEvaluationReport": null
+      "status": "completed",
+      "latestEvaluationReport": "docs/features/F02-events-showcase/reports/eval-01.md"
     },
     "F03": {
       "id": "F03",
