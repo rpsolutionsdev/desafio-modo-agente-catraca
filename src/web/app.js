@@ -4,6 +4,9 @@ import {
   renderOrganizerGuardBlockedView,
   renderRegisterView,
 } from './views/auth.js';
+import { renderShowcaseView } from './views/showcase.js';
+import { renderOrganizerListView } from './views/organizer-list.js';
+import { renderOrganizerEventView } from './views/organizer-event.js';
 
 const root = document.getElementById('app-root');
 const header = document.getElementById('app-header');
@@ -89,15 +92,6 @@ function renderHeader() {
   });
 }
 
-function renderShowcasePlaceholder(container) {
-  container.innerHTML = `
-    <div class="card" data-view="showcase">
-      <h1>Eventos disponíveis</h1>
-      <p style="color: var(--muted);">Confira os eventos publicados na vitrine da Catraca.</p>
-    </div>
-  `;
-}
-
 function renderMyTicketsPlaceholder(container) {
   if (!state.user) {
     container.innerHTML = `
@@ -125,46 +119,6 @@ function renderMyTicketsPlaceholder(container) {
     <div class="card" data-view="my-tickets">
       <h1>Meus ingressos</h1>
       <p style="color: var(--muted);">Seus ingressos adquiridos aparecerão aqui.</p>
-    </div>
-  `;
-}
-
-async function renderOrganizerArea(container) {
-  container.innerHTML = `
-    <div class="card" data-view="organizer-home">
-      <h1>Área do Organizador</h1>
-      <p style="color: var(--muted);">Bem-vindo(a), ${escapeHtml(state.user.name)}.</p>
-      <div id="organizer-events-list">Carregando eventos...</div>
-    </div>
-  `;
-
-  const listEl = container.querySelector('#organizer-events-list');
-  try {
-    const res = await fetch('/api/organizer/events', { credentials: 'same-origin' });
-    if (!res.ok) {
-      renderOrganizerGuardBlockedView(container, state.user);
-      return;
-    }
-    const events = await res.json();
-    if (listEl) {
-      listEl.innerHTML =
-        Array.isArray(events) && events.length === 0
-          ? '<p style="color: var(--muted);">Nenhum evento cadastrado ainda.</p>'
-          : `<p>${events.length} evento(s) encontrado(s).</p>`;
-    }
-  } catch {
-    if (listEl) {
-      listEl.innerHTML = '<div class="alert error">Erro ao carregar eventos do organizador.</div>';
-    }
-  }
-}
-
-function renderOrganizerEventDetailPlaceholder(container, eventId) {
-  container.innerHTML = `
-    <div class="card" data-view="organizer-event-detail">
-      <h1>Gestão do Evento</h1>
-      <p style="color: var(--muted);">Evento: ${escapeHtml(eventId)}</p>
-      <a href="/organizer" class="btn secondary" data-link>Voltar para Meus eventos</a>
     </div>
   `;
 }
@@ -197,13 +151,16 @@ function renderRoute() {
     }
 
     if (path === '/organizer') {
-      void renderOrganizerArea(root);
+      void renderOrganizerListView(root, { user: state.user });
       return;
     }
 
     const eventMatch = path.match(/^\/organizer\/events\/([^/]+)$/);
     if (eventMatch) {
-      renderOrganizerEventDetailPlaceholder(root, decodeURIComponent(eventMatch[1]));
+      void renderOrganizerEventView(root, {
+        eventId: decodeURIComponent(eventMatch[1]),
+        user: state.user,
+      });
       return;
     }
 
@@ -212,7 +169,7 @@ function renderRoute() {
   }
 
   if (path === '/') {
-    renderShowcasePlaceholder(root);
+    void renderShowcaseView(root);
     return;
   }
 
