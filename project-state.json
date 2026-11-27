@@ -1,6 +1,6 @@
 {
   "project": "Catraca",
-  "updatedAt": "2026-11-27T22:00:56.879Z",
+  "updatedAt": "2026-11-27T22:33:53.249Z",
   "waves": {
     "wave1": [
       "F01"
@@ -41,8 +41,8 @@
       "slug": "F03-purchases-gateway",
       "name": "Compra de Ingressos, Lotação Concorrente, Gateway Simulado e API de Parceiros",
       "wave": 3,
-      "status": "planned",
-      "latestEvaluationReport": null
+      "status": "completed",
+      "latestEvaluationReport": "docs/features/F03-purchases-gateway/reports/eval-01.md"
     },
     "F04": {
       "id": "F04",

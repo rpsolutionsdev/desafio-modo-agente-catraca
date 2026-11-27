@@ -6,6 +6,7 @@ import { pool } from './db/pool.js';
 import {
   attachUser,
   requireOrganizer,
+  requireParticipant,
   requirePartnerApiKey,
 } from './modules/auth/middleware.js';
 import { authRouter } from './modules/auth/routes.js';
@@ -14,6 +15,11 @@ import {
   partnerEventsRouter,
   publicEventsRouter,
 } from './modules/events/routes.js';
+import {
+  myTicketsRouter,
+  partnerPurchasesRouter,
+  showcasePurchasesRouter,
+} from './modules/purchases/routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,13 +39,18 @@ export function createApp() {
   app.use('/api/partner', requirePartnerApiKey);
   app.use(attachUser);
   app.use('/api/organizer', requireOrganizer);
+  app.use('/api/my-tickets', requireParticipant);
+  app.post('/api/events/:eventId/purchases', requireParticipant);
 
   app.use(express.json());
 
   app.use('/api/auth', authRouter);
   app.use('/api/events', publicEventsRouter);
+  app.use('/api/events', showcasePurchasesRouter);
+  app.use('/api/my-tickets', myTicketsRouter);
   app.use('/api/organizer/events', organizerEventsRouter);
   app.use('/api/partner/events', partnerEventsRouter);
+  app.use('/api/partner', partnerPurchasesRouter);
 
   app.all('/api/*', (_req: Request, res: Response) => {
     res.status(404).json({ error: 'not_found' });
