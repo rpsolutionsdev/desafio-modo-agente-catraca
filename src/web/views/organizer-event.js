@@ -9,6 +9,7 @@ import {
   parsePriceInputToCents,
   toDatetimeLocalValue,
 } from './showcase.js';
+import { mountCancelWidget } from './cancel-widget.js';
 
 function statusBadgeStyle(status) {
   if (status === 'published') return 'background: #dcfce7; color: #166534;';
@@ -416,6 +417,48 @@ export async function renderOrganizerEventView(container, { eventId, user }) {
               new CustomEvent('catraca:checkin-success', { detail: checkinResult }),
             );
           }
+        },
+      });
+    }
+
+    const cancelSlot = container.querySelector('#event-cancel-slot');
+    if (cancelSlot) {
+      mountCancelWidget(cancelSlot, {
+        event: currentEvent,
+        onUnauthorized: () => {
+          renderOrganizerGuardBlockedView(container, null);
+        },
+        onForbidden: () => {
+          renderForbiddenEventView(container);
+        },
+        onCancelled: async () => {
+          try {
+            const refreshedRes = await fetch(
+              `/api/organizer/events/${encodeURIComponent(currentEvent.id)}`,
+              { credentials: 'same-origin' },
+            );
+            if (refreshedRes.ok) {
+              currentEvent = await refreshedRes.json();
+            } else {
+              currentEvent = {
+                ...currentEvent,
+                status: 'cancelled',
+                availableSeats: 0,
+                cancelledAt: new Date().toISOString(),
+              };
+            }
+          } catch {
+            currentEvent = {
+              ...currentEvent,
+              status: 'cancelled',
+              availableSeats: 0,
+              cancelledAt: new Date().toISOString(),
+            };
+          }
+          if (!container.isConnected) return;
+          renderDetail(
+            'Evento cancelado com sucesso. Vendas, edição e republicação foram bloqueadas e o processamento de estornos concluirá em até 10 segundos.',
+          );
         },
       });
     }

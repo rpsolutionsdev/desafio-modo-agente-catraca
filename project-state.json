@@ -1,6 +1,6 @@
 {
   "project": "Catraca",
-  "updatedAt": "2026-11-27T22:33:53.249Z",
+  "updatedAt": "2026-11-28T10:43:38.174Z",
   "waves": {
     "wave1": [
       "F01"
@@ -49,16 +49,16 @@
       "slug": "F04-checkin",
       "name": "Operação de Check-in do Evento",
       "wave": 4,
-      "status": "planned",
-      "latestEvaluationReport": null
+      "status": "completed",
+      "latestEvaluationReport": "docs/features/F04-checkin/reports/eval-01.md"
     },
     "F05": {
       "id": "F05",
       "slug": "F05-cancellation-refunds",
       "name": "Cancelamento Irreversível e Estorno Assíncrono",
       "wave": 4,
-      "status": "planned",
-      "latestEvaluationReport": null
+      "status": "completed",
+      "latestEvaluationReport": "docs/features/F05-cancellation-refunds/reports/eval-01.md"
     },
     "F06": {
       "id": "F06",
