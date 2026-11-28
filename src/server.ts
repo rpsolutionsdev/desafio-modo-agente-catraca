@@ -20,6 +20,8 @@ import {
   partnerPurchasesRouter,
   showcasePurchasesRouter,
 } from './modules/purchases/routes.js';
+import { organizerCancellationRouter } from './modules/cancellation/routes.js';
+import { startCancellationReconciler } from './modules/cancellation/service.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -49,8 +51,11 @@ export function createApp() {
   app.use('/api/events', showcasePurchasesRouter);
   app.use('/api/my-tickets', myTicketsRouter);
   app.use('/api/organizer/events', organizerEventsRouter);
+  app.use('/api/organizer/events', organizerCancellationRouter);
   app.use('/api/partner/events', partnerEventsRouter);
   app.use('/api/partner', partnerPurchasesRouter);
+
+  startCancellationReconciler();
 
   app.all('/api/*', (_req: Request, res: Response) => {
     res.status(404).json({ error: 'not_found' });
