@@ -1,4 +1,5 @@
 import { escapeHtml, renderOrganizerGuardBlockedView } from './auth.js';
+import { renderCheckinWidget } from './checkin-widget.js';
 import {
   describeValidationHint,
   formatDateTimeBR,
@@ -362,6 +363,62 @@ export async function renderOrganizerEventView(container, { eventId, user }) {
         }
       }
     });
+
+    const checkinSlot = container.querySelector('#event-checkin-slot');
+    if (checkinSlot) {
+      renderCheckinWidget(checkinSlot, {
+        eventId: currentEvent.id,
+        onUnauthorized: () => {
+          renderOrganizerGuardBlockedView(container, null);
+        },
+        onForbidden: () => {
+          renderForbiddenEventView(container);
+        },
+        onCheckinSuccess: async (checkinResult) => {
+          try {
+            const refreshRes = await fetch(
+              `/api/organizer/events/${encodeURIComponent(currentEvent.id)}`,
+              { credentials: 'same-origin' },
+            );
+            if (refreshRes.ok) {
+              currentEvent = await refreshRes.json();
+              if (!container.isConnected) return;
+
+              const nameEl = container.querySelector('#detail-event-name');
+              if (nameEl) nameEl.textContent = currentEvent.name;
+
+              const statusEl = container.querySelector('#detail-event-status');
+              if (statusEl) {
+                statusEl.textContent = formatEventStatusLabel(currentEvent.status);
+                statusEl.setAttribute('style', statusBadgeStyle(currentEvent.status));
+              }
+
+              const startsAtEl = container.querySelector('#detail-event-starts-at');
+              if (startsAtEl) startsAtEl.textContent = formatDateTimeBR(currentEvent.startsAt);
+
+              const locationEl = container.querySelector('#detail-event-location');
+              if (locationEl) locationEl.textContent = currentEvent.location;
+
+              const priceEl = container.querySelector('#detail-event-price');
+              if (priceEl) priceEl.textContent = formatPriceBRL(currentEvent.priceCents);
+
+              const capEl = container.querySelector('#detail-event-capacity');
+              if (capEl) {
+                capEl.textContent = `${currentEvent.capacity} / ${currentEvent.availableSeats}`;
+              }
+            }
+          } catch {
+            // Falha silenciosa na atualização complementar do resumo para preservar o feedback de R10
+          }
+
+          if (typeof CustomEvent === 'function') {
+            container.dispatchEvent(
+              new CustomEvent('catraca:checkin-success', { detail: checkinResult }),
+            );
+          }
+        },
+      });
+    }
   }
 
   renderDetail();

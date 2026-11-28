@@ -20,6 +20,7 @@ import {
   partnerPurchasesRouter,
   showcasePurchasesRouter,
 } from './modules/purchases/routes.js';
+import { organizerCheckinRouter } from './modules/checkin/routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -49,6 +50,7 @@ export function createApp() {
   app.use('/api/events', showcasePurchasesRouter);
   app.use('/api/my-tickets', myTicketsRouter);
   app.use('/api/organizer/events', organizerEventsRouter);
+  app.use('/api/organizer/events', organizerCheckinRouter);
   app.use('/api/partner/events', partnerEventsRouter);
   app.use('/api/partner', partnerPurchasesRouter);
 
