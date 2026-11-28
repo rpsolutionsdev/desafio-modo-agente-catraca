@@ -23,6 +23,7 @@ import {
 import { organizerCheckinRouter } from './modules/checkin/routes.js';
 import { organizerCancellationRouter } from './modules/cancellation/routes.js';
 import { startCancellationReconciler } from './modules/cancellation/service.js';
+import { organizerDashboardRouter } from './modules/dashboard/routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -54,6 +55,7 @@ export function createApp() {
   app.use('/api/organizer/events', organizerEventsRouter);
   app.use('/api/organizer/events', organizerCheckinRouter);
   app.use('/api/organizer/events', organizerCancellationRouter);
+  app.use('/api/organizer/events', organizerDashboardRouter);
   app.use('/api/partner/events', partnerEventsRouter);
   app.use('/api/partner', partnerPurchasesRouter);
 
