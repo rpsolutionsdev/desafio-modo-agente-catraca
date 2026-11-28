@@ -1,23 +1,12 @@
 {
   "project": "Catraca",
-  "updatedAt": "2026-11-28T10:43:38.174Z",
+  "updatedAt": "2026-11-28T08:25:00-03:00",
   "waves": {
-    "wave1": [
-      "F01"
-    ],
-    "wave2": [
-      "F02"
-    ],
-    "wave3": [
-      "F03"
-    ],
-    "wave4_parallel": [
-      "F04",
-      "F05"
-    ],
-    "wave5": [
-      "F06"
-    ]
+    "wave1": ["F01"],
+    "wave2": ["F02"],
+    "wave3": ["F03"],
+    "wave4_parallel": ["F04", "F05"],
+    "wave5": ["F06"]
   },
   "features": {
     "F01": {
@@ -65,8 +54,8 @@
       "slug": "F06-event-dashboard",
       "name": "Painel Operacional e Financeiro do Evento",
       "wave": 5,
-      "status": "planned",
-      "latestEvaluationReport": null
+      "status": "completed",
+      "latestEvaluationReport": "docs/features/F06-event-dashboard/reports/eval-01.md"
     }
   }
 }

@@ -1,5 +1,6 @@
 import { escapeHtml, renderOrganizerGuardBlockedView } from './auth.js';
 import { renderCheckinWidget } from './checkin-widget.js';
+import { renderDashboardWidget } from './dashboard-widget.js';
 import {
   describeValidationHint,
   formatDateTimeBR,
@@ -78,7 +79,14 @@ export async function renderOrganizerEventView(container, { eventId, user }) {
 
   if (!container.isConnected) return;
 
+  let activeDashboardWidget = null;
+
   function renderDetail(flashMessage = '') {
+    if (activeDashboardWidget && typeof activeDashboardWidget.destroy === 'function') {
+      activeDashboardWidget.destroy();
+      activeDashboardWidget = null;
+    }
+
     const isCancelled = currentEvent.status === 'cancelled';
     const isDraft = currentEvent.status === 'draft';
     const disabledAttr = isCancelled ? 'disabled' : '';
@@ -364,6 +372,38 @@ export async function renderOrganizerEventView(container, { eventId, user }) {
         }
       }
     });
+
+    const dashboardSlot = container.querySelector('#event-dashboard-slot');
+    if (dashboardSlot) {
+      activeDashboardWidget = renderDashboardWidget(dashboardSlot, {
+        eventId: currentEvent.id,
+        eventContainer: container,
+        onUnauthorized: () => {
+          activeDashboardWidget?.destroy?.();
+          activeDashboardWidget = null;
+          renderOrganizerGuardBlockedView(container, null);
+        },
+        onForbidden: () => {
+          activeDashboardWidget?.destroy?.();
+          activeDashboardWidget = null;
+          renderForbiddenEventView(container);
+        },
+        onLoaded: (metrics) => {
+          if (!container.isConnected) return;
+          if (typeof metrics.availableSeats === 'number') {
+            currentEvent = {
+              ...currentEvent,
+              status: metrics.status || currentEvent.status,
+              availableSeats: metrics.availableSeats,
+            };
+            const capEl = container.querySelector('#detail-event-capacity');
+            if (capEl) {
+              capEl.textContent = `${currentEvent.capacity} / ${currentEvent.availableSeats}`;
+            }
+          }
+        },
+      });
+    }
 
     const checkinSlot = container.querySelector('#event-checkin-slot');
     if (checkinSlot) {
